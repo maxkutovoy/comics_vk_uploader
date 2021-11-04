@@ -56,14 +56,13 @@ def get_uploaded_image_data(token, group_id):
     url = get_boot_server_url(token, group_id)
     comic_name = os.listdir('files')[0]
     with open(f'files/{comic_name}', 'rb') as file:
-        print(f'files/{comic_name}')
         files = {
             'photo': file,
         }
         response = requests.post(url, files=files).json()
     if 'error' in response:
         raise requests.exceptions.HTTPError(response['error']['error_msg'])
-    return response.json()
+    return response
 
 
 def save_image_to_wall(token, group_id):
