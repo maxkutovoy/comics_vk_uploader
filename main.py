@@ -49,10 +49,10 @@ def get_boot_server_url(token, group_id):
         'v': '5.131',
         'group_id': group_id,
     }
-    response = requests.post(url, params=payload)
-    response.raise_for_status()
-    upload_data = response.json()
-    return upload_data['response']['upload_url']
+    response = requests.post(url, params=payload).json()
+    if 'error' in response:
+        raise requests.exceptions.HTTPError(response['error']['error_msg'])
+    return response['response']['upload_url']
 
 
 def get_uploaded_image_data(token, group_id):
@@ -63,8 +63,9 @@ def get_uploaded_image_data(token, group_id):
         files = {
             'photo': file,
         }
-        response = requests.post(url, files=files)
-        response.raise_for_status()
+        response = requests.post(url, files=files).json()
+    if 'error' in response:
+        raise requests.exceptions.HTTPError(response['error']['error_msg'])
     return response.json()
 
 
@@ -80,9 +81,10 @@ def save_image_to_wall(token, group_id):
         'hash': uploaded_image_data['hash'],
         'v': '5.131',
     }
-    response = requests.post(url, params)
-    response.raise_for_status()
-    return response.json()
+    response = requests.post(url, params).json()
+    if 'error' in response:
+        raise requests.exceptions.HTTPError(response['error']['error_msg'])
+    return response
 
 
 def post_image(token, group_id, image_description):
