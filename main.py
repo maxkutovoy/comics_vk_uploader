@@ -6,8 +6,6 @@ import random
 import requests
 from dotenv import load_dotenv
 
-load_dotenv()
-
 
 def pars_filename(url):
     parsed_url = urlsplit(url)
@@ -42,8 +40,7 @@ def save_image(image_url, filename):
 
 
 def get_boot_server_url(token, group_id):
-    method = 'photos.getWallUploadServer'
-    url = f"https://api.vk.com/method/{method}"
+    url = 'https://api.vk.com/method/photos.getWallUploadServer'
     payload = {
         'access_token': token,
         'v': '5.131',
@@ -71,8 +68,7 @@ def get_uploaded_image_data(token, group_id):
 
 def save_image_to_wall(token, group_id):
     uploaded_image_data = get_uploaded_image_data(token, group_id)
-    method = 'photos.saveWallPhoto'
-    url = f"https://api.vk.com/method/{method}"
+    url = 'https://api.vk.com/method/photos.saveWallPhoto'
     params = {
         'access_token': token,
         'group_id': group_id,
@@ -88,7 +84,7 @@ def save_image_to_wall(token, group_id):
 
 
 def post_image(token, group_id, image_description):
-    url = f'https://api.vk.com/method/wall.post'
+    url = 'https://api.vk.com/method/wall.post'
     saved_image_data = save_image_to_wall(token, group_id)
     owner_id = saved_image_data['response'][0]['owner_id']
     media_id = saved_image_data['response'][0]['id']
@@ -105,7 +101,12 @@ def post_image(token, group_id, image_description):
         raise requests.exceptions.HTTPError(response['error']['error_msg'])
 
 
+def remove_image(image_name):
+    os.remove(f'files/{image_name}')
+
+
 def main():
+    load_dotenv()
     VK_TOKEN = os.getenv('VK_TOKEN')
     GROUP_ID = os.getenv('GROUP_ID')
     random_comic = fetch_random_comic()
@@ -114,6 +115,7 @@ def main():
     comic_title = pars_filename(image_comic_url)
     save_image(image_comic_url, comic_title)
     post_image(VK_TOKEN, GROUP_ID, comic_description)
+    remove_image(comic_title)
 
 
 if __name__ == '__main__':
