@@ -21,7 +21,7 @@ pip install -r requirements.txt
 `client_id` увидите в адресной строке браузера.
 
 Получите токен по [процедуре Implicit Flow](https://vk.com/dev/implicit_flow_user).
-Вам понадобятся следующие права: `photos`, `groups`, `wall` и `offline`
+Вам понадобятся следующие права: `photos`, `groups`, `wall` и `offline`.
 
 ### Создать файл `.env`:
 
@@ -54,4 +54,4 @@ python3 main.py
 
 ## Цель проекта:
 
-Код написан в образовательных целях на курсе для web-разработчиков [dvmn.org](https://dvmn.org/)
+Код написан в образовательных целях на курсе для web-разработчиков [dvmn.org](https://dvmn.org/).
