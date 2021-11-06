@@ -29,9 +29,13 @@ def fetch_random_comic():
     return response.json()
 
 
-def save_image(image_url, filename):
-    directory = 'files'
+def check_dir(directory):
     Path(directory).mkdir(parents=True, exist_ok=True)
+    return directory
+
+
+def save_image(image_url, filename, image_dir):
+    directory = check_dir(image_dir)
     file_path = f"{directory}/{filename}"
     response = requests.get(image_url)
     response.raise_for_status()
@@ -106,14 +110,15 @@ def remove_image(image_name):
 
 def main():
     load_dotenv()
-    VK_TOKEN = os.getenv('VK_TOKEN')
-    GROUP_ID = os.getenv('GROUP_ID')
+    vk_token = os.getenv('VK_TOKEN')
+    group_id = os.getenv('GROUP_ID')
+    image_dir = 'files'
     random_comic = fetch_random_comic()
     image_comic_url = random_comic['img']
     comic_description = random_comic['alt']
     comic_title = pars_filename(image_comic_url)
-    save_image(image_comic_url, comic_title)
-    post_image(VK_TOKEN, GROUP_ID, comic_description)
+    save_image(image_comic_url, comic_title, image_dir)
+    post_image(vk_token, group_id, comic_description)
     remove_image(comic_title)
 
 
