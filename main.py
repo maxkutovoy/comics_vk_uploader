@@ -78,6 +78,7 @@ def save_image_to_wall(token, group_id, uploaded_image_data):
         'v': '5.131',
     }
     response = requests.post(url, params)
+    response.raise_for_status()
     check_vk_response(response.json())
     return response.json()
 
@@ -94,8 +95,8 @@ def post_image(token, group_id, image_description, saved_image_data):
         'access_token': token,
         'v': '5.131'
     }
-    response = requests.post(url, params=params).json()
-    check_vk_response(response)
+    response = requests.post(url, params=params)
+    check_vk_response(response.json())
 
 
 def check_vk_response(response):
