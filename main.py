@@ -56,10 +56,10 @@ def get_boot_server_url(token, group_id):
     return response['response']['upload_url']
 
 
-def get_uploaded_image_data(token, group_id):
+def get_uploaded_image_data(token, group_id, image_dir):
     url = get_boot_server_url(token, group_id)
-    comic_name = os.listdir('files')[0]
-    with open(f'files/{comic_name}', 'rb') as file:
+    comic_name = os.listdir(image_dir)[0]
+    with open(f'{image_dir}/{comic_name}', 'rb') as file:
         files = {
             'photo': file,
         }
@@ -86,9 +86,9 @@ def save_image_to_wall(token, group_id):
     return response
 
 
-def post_image(token, group_id, image_description):
+def post_image(token, group_id, image_description, image_dir):
     url = 'https://api.vk.com/method/wall.post'
-    saved_image_data = save_image_to_wall(token, group_id)
+    saved_image_data = save_image_to_wall(token, group_id, image_dir)
     owner_id = saved_image_data['response'][0]['owner_id']
     media_id = saved_image_data['response'][0]['id']
     params = {
