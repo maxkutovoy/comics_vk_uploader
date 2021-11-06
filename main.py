@@ -117,9 +117,13 @@ def main():
     image_url = random_comic['img']
     comic_description = random_comic['alt']
     comic_title = pars_filename(image_url)
-    save_image(image_url, comic_title, image_dir)
-    post_image(vk_token, group_id, comic_description)
-    remove_image(comic_title)
+    try:
+        save_image(image_url, comic_title, image_dir)
+        post_image(vk_token, group_id, comic_description)
+    except ValueError:
+        raise ValueError('error')
+    finally:
+        remove_image(comic_title)
 
 
 if __name__ == '__main__':
