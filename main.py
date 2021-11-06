@@ -50,27 +50,24 @@ def get_boot_server_url(token, group_id):
         'v': '5.131',
         'group_id': group_id,
     }
-    response = requests.post(url, params=payload).json()
-    if 'error' in response:
-        raise requests.exceptions.HTTPError(response['error']['error_msg'])
-    return response['response']['upload_url']
+    response = requests.post(url, params=payload)
+    response.raise_for_status()
+    check_vk_response(response.json())
+    return response.json()['response']['upload_url']
 
 
-def get_uploaded_image_data(token, group_id, image_dir):
-    url = get_boot_server_url(token, group_id)
-    comic_name = os.listdir(image_dir)[0]
-    with open(f'{image_dir}/{comic_name}', 'rb') as file:
+def get_uploaded_image_data(boot_server_url, image_dir):
+    with open(f'{image_dir}/{os.listdir(image_dir)[0]}', 'rb') as file:
         files = {
             'photo': file,
         }
-        response = requests.post(url, files=files).json()
-    if 'error' in response:
-        raise requests.exceptions.HTTPError(response['error']['error_msg'])
-    return response
+        response = requests.post(boot_server_url, files=files)
+        response.raise_for_status()
+    check_vk_response(response.json())
+    return response.json()
 
 
-def save_image_to_wall(token, group_id, image_dir):
-    uploaded_image_data = get_uploaded_image_data(token, group_id, image_dir)
+def save_image_to_wall(token, group_id, uploaded_image_data):
     url = 'https://api.vk.com/method/photos.saveWallPhoto'
     params = {
         'access_token': token,
@@ -80,15 +77,13 @@ def save_image_to_wall(token, group_id, image_dir):
         'hash': uploaded_image_data['hash'],
         'v': '5.131',
     }
-    response = requests.post(url, params).json()
-    if 'error' in response:
-        raise requests.exceptions.HTTPError(response['error']['error_msg'])
-    return response
+    response = requests.post(url, params)
+    check_vk_response(response.json())
+    return response.json()
 
 
-def post_image(token, group_id, image_description, image_dir):
+def post_image(token, group_id, image_description, saved_image_data):
     url = 'https://api.vk.com/method/wall.post'
-    saved_image_data = save_image_to_wall(token, group_id, image_dir)
     owner_id = saved_image_data['response'][0]['owner_id']
     media_id = saved_image_data['response'][0]['id']
     params = {
@@ -100,8 +95,14 @@ def post_image(token, group_id, image_description, image_dir):
         'v': '5.131'
     }
     response = requests.post(url, params=params).json()
+    check_vk_response(response)
+
+
+def check_vk_response(response):
     if 'error' in response:
-        raise requests.exceptions.HTTPError(response['error']['error_msg'])
+        error_code = response['error']['error_code']
+        error_msg = response['error']['error_msg']
+        raise requests.exceptions.HTTPError(error_code, error_msg)
 
 
 def main():
@@ -115,9 +116,12 @@ def main():
     comic_title = pars_filename(image_url)
     try:
         save_image(image_url, comic_title, image_dir)
-        post_image(vk_token, group_id, comic_description, image_dir)
-    except ValueError:
-        raise ValueError('error')
+        boot_server_url = get_boot_server_url(vk_token, group_id)
+        uploaded_image_data = get_uploaded_image_data(boot_server_url, image_dir)
+        saved_image_to_wall_data = save_image_to_wall(vk_token, group_id, uploaded_image_data)
+        post_image(vk_token, group_id, comic_description, saved_image_to_wall_data)
+    except requests.exceptions.HTTPError as HttpError:
+        print(HttpError.args[0], HttpError.args[1])
     finally:
         os.remove(f'{image_dir}/{comic_title}')
 
