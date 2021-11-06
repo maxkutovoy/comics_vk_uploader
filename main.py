@@ -114,10 +114,10 @@ def main():
     group_id = os.getenv('GROUP_ID')
     image_dir = 'files'
     random_comic = fetch_random_comic()
-    image_comic_url = random_comic['img']
+    image_url = random_comic['img']
     comic_description = random_comic['alt']
-    comic_title = pars_filename(image_comic_url)
-    save_image(image_comic_url, comic_title, image_dir)
+    comic_title = pars_filename(image_url)
+    save_image(image_url, comic_title, image_dir)
     post_image(vk_token, group_id, comic_description)
     remove_image(comic_title)
 
