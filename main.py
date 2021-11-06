@@ -69,8 +69,8 @@ def get_uploaded_image_data(token, group_id, image_dir):
     return response
 
 
-def save_image_to_wall(token, group_id):
-    uploaded_image_data = get_uploaded_image_data(token, group_id)
+def save_image_to_wall(token, group_id, image_dir):
+    uploaded_image_data = get_uploaded_image_data(token, group_id, image_dir)
     url = 'https://api.vk.com/method/photos.saveWallPhoto'
     params = {
         'access_token': token,
@@ -108,14 +108,14 @@ def main():
     load_dotenv()
     vk_token = os.getenv('VK_TOKEN')
     group_id = os.getenv('GROUP_ID')
-    image_dir = 'files'
+    image_dir = os.getenv('IMAGE_DIR', 'files')
     random_comic = fetch_random_comic()
     image_url = random_comic['img']
     comic_description = random_comic['alt']
     comic_title = pars_filename(image_url)
     try:
         save_image(image_url, comic_title, image_dir)
-        post_image(vk_token, group_id, comic_description)
+        post_image(vk_token, group_id, comic_description, image_dir)
     except ValueError:
         raise ValueError('error')
     finally:
