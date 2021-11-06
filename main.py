@@ -120,8 +120,6 @@ def main():
         uploaded_image_data = get_uploaded_image_data(boot_server_url, image_dir)
         saved_image_to_wall_data = save_image_to_wall(vk_token, group_id, uploaded_image_data)
         post_image(vk_token, group_id, comic_description, saved_image_to_wall_data)
-    except requests.exceptions.HTTPError as HttpError:
-        print(HttpError.args[0], HttpError.args[1])
     finally:
         os.remove(f'{image_dir}/{comic_title}')
 
