@@ -104,10 +104,6 @@ def post_image(token, group_id, image_description):
         raise requests.exceptions.HTTPError(response['error']['error_msg'])
 
 
-def remove_image(image_name):
-    os.remove(f'files/{image_name}')
-
-
 def main():
     load_dotenv()
     vk_token = os.getenv('VK_TOKEN')
@@ -123,7 +119,7 @@ def main():
     except ValueError:
         raise ValueError('error')
     finally:
-        remove_image(comic_title)
+        os.remove(f'{image_dir}/{comic_title}')
 
 
 if __name__ == '__main__':
