@@ -29,14 +29,8 @@ def fetch_random_comic():
     return response.json()
 
 
-def check_dir(directory):
-    Path(directory).mkdir(parents=True, exist_ok=True)
-    return directory
-
-
 def save_image(image_url, filename, image_dir):
-    directory = image_dir
-    file_path = f"{directory}/{filename}"
+    file_path = f"{image_dir}/{filename}"
     response = requests.get(image_url)
     response.raise_for_status()
     with open(file_path, "wb") as file:
@@ -115,7 +109,7 @@ def main():
     image_url = random_comic['img']
     comic_description = random_comic['alt']
     comic_title = pars_filename(image_url)
-    check_dir(image_dir)
+    Path(image_dir).mkdir(parents=True, exist_ok=True)
     try:
         save_image(image_url, comic_title, image_dir)
         boot_server_url = get_boot_server_url(vk_token, group_id)
