@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 import random
@@ -117,7 +118,7 @@ def main():
         saved_image_to_wall_data = save_image_to_wall(vk_token, group_id, uploaded_image_data)
         post_image(vk_token, group_id, comic_description, saved_image_to_wall_data)
     finally:
-        os.remove(f'{image_dir}/{comic_title}')
+        shutil.rmtree(image_dir, ignore_errors=False)
 
 
 if __name__ == '__main__':
