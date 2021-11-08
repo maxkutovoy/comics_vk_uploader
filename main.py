@@ -7,7 +7,7 @@ import requests
 from dotenv import load_dotenv
 
 
-def pars_filename(url):
+def parse_filename(url):
     parsed_url = urlsplit(url)
     filename = os.path.split(unquote(parsed_url.path))[1]
     return filename
@@ -108,7 +108,7 @@ def main():
     random_comic = fetch_random_comic()
     image_url = random_comic['img']
     comic_description = random_comic['alt']
-    comic_title = pars_filename(image_url)
+    comic_title = parse_filename(image_url)
     Path(image_dir).mkdir(parents=True, exist_ok=True)
     try:
         save_image(image_url, comic_title, image_dir)
