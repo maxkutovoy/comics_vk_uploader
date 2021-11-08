@@ -27,7 +27,8 @@ def fetch_random_comic():
     url = f'https://xkcd.com/{random_comic_number}/info.0.json'
     response = requests.get(url)
     response.raise_for_status()
-    return response.json()
+    random_comic = response.json()
+    return random_comic['img'], random_comic['alt']
 
 
 def save_image(image_url, filename, image_dir):
@@ -47,8 +48,9 @@ def get_boot_server_url(token, group_id):
     }
     response = requests.post(url, params=payload)
     response.raise_for_status()
-    check_vk_response(response.json())
-    return response.json()['response']['upload_url']
+    boot_server_url = response.json()
+    check_vk_response(boot_server_url)
+    return boot_server_url['response']['upload_url']
 
 
 def get_uploaded_image_data(boot_server_url, image_dir):
@@ -57,31 +59,37 @@ def get_uploaded_image_data(boot_server_url, image_dir):
             'photo': file,
         }
         response = requests.post(boot_server_url, files=files)
-        response.raise_for_status()
-    check_vk_response(response.json())
-    return response.json()
+    response.raise_for_status()
+    uploaded_image_params = response.json()
+    check_vk_response(uploaded_image_params)
+    return uploaded_image_params['photo'], uploaded_image_params['server'], uploaded_image_params['hash']
 
 
-def save_image_to_wall(token, group_id, uploaded_image_data):
+def save_image_to_wall(
+        token,
+        group_id,
+        uploaded_image_id,
+        uploaded_image_server,
+        uploaded_image_hash,
+):
     url = 'https://api.vk.com/method/photos.saveWallPhoto'
     params = {
         'access_token': token,
         'group_id': group_id,
-        'photo': uploaded_image_data['photo'],
-        'server': uploaded_image_data['server'],
-        'hash': uploaded_image_data['hash'],
+        'photo': uploaded_image_id,
+        'server': uploaded_image_server,
+        'hash': uploaded_image_hash,
         'v': '5.131',
     }
     response = requests.post(url, params)
     response.raise_for_status()
-    check_vk_response(response.json())
-    return response.json()
+    saved_image_data = response.json()
+    check_vk_response(saved_image_data)
+    return saved_image_data['response'][0]['owner_id'], saved_image_data['response'][0]['id']
 
 
-def post_image(token, group_id, image_description, saved_image_data):
+def post_image(token, group_id, image_description, owner_id, media_id):
     url = 'https://api.vk.com/method/wall.post'
-    owner_id = saved_image_data['response'][0]['owner_id']
-    media_id = saved_image_data['response'][0]['id']
     params = {
         'owner_id': f'-{group_id}',
         'message': image_description,
@@ -91,6 +99,7 @@ def post_image(token, group_id, image_description, saved_image_data):
         'v': '5.131'
     }
     response = requests.post(url, params=params)
+    response.raise_for_status()
     check_vk_response(response.json())
 
 
@@ -106,19 +115,24 @@ def main():
     vk_token = os.getenv('VK_TOKEN')
     group_id = os.getenv('GROUP_ID')
     image_dir = os.getenv('IMAGE_DIR', 'files')
-    random_comic = fetch_random_comic()
-    image_url = random_comic['img']
-    comic_description = random_comic['alt']
+    image_url, comic_description = fetch_random_comic()
     comic_title = parse_filename(image_url)
     Path(image_dir).mkdir(parents=True, exist_ok=True)
     try:
         save_image(image_url, comic_title, image_dir)
         boot_server_url = get_boot_server_url(vk_token, group_id)
-        uploaded_image_data = get_uploaded_image_data(boot_server_url, image_dir)
-        saved_image_to_wall_data = save_image_to_wall(vk_token, group_id, uploaded_image_data)
-        post_image(vk_token, group_id, comic_description, saved_image_to_wall_data)
+        uploaded_image_id, uploaded_image_server, uploaded_image_hash = get_uploaded_image_data(boot_server_url,
+                                                                                                image_dir)
+        owner_id, media_id = save_image_to_wall(
+            vk_token,
+            group_id,
+            uploaded_image_id,
+            uploaded_image_server,
+            uploaded_image_hash,
+        )
+        post_image(vk_token, group_id, comic_description, owner_id, media_id)
     finally:
-        shutil.rmtree(image_dir, ignore_errors=False)
+        shutil.rmtree(image_dir, ignore_errors=True)
 
 
 if __name__ == '__main__':
