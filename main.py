@@ -53,8 +53,8 @@ def get_wall_upload_server(token, group_id):
     return boot_server['response']['upload_url']
 
 
-def save_image_to_server(boot_server_url, image_dir):
-    with open(f'{image_dir}/{os.listdir(image_dir)[0]}', 'rb') as file:
+def save_image_to_server(boot_server_url, image_title, image_dir):
+    with open(f'{image_dir}/{image_title}', 'rb') as file:
         files = {
             'photo': file,
         }
@@ -122,14 +122,14 @@ def main():
         save_image(image_url, comic_title, image_dir)
         boot_server_url = get_wall_upload_server(vk_token, group_id)
         image_id, image_server, image_hash = save_image_to_server(boot_server_url,
+                                                                  comic_title,
                                                                   image_dir)
-        owner_id, media_id = save_image_to_wall(
-            vk_token,
-            group_id,
-            image_id,
-            image_server,
-            image_hash,
-        )
+        owner_id, media_id = save_image_to_wall(vk_token,
+                                                group_id,
+                                                image_id,
+                                                image_server,
+                                                image_hash,
+                                                )
         post_image(vk_token, group_id, comic_description, owner_id, media_id)
     finally:
         shutil.rmtree(image_dir, ignore_errors=True)
