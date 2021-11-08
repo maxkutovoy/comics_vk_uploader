@@ -48,9 +48,9 @@ def get_wall_upload_server(token, group_id):
     }
     response = requests.post(url, params=payload)
     response.raise_for_status()
-    boot_server_url = response.json()
-    check_vk_response(boot_server_url)
-    return boot_server_url['response']['upload_url']
+    boot_server = response.json()
+    check_vk_response(boot_server)
+    return boot_server['response']['upload_url']
 
 
 def save_image_to_server(boot_server_url, image_dir):
@@ -83,9 +83,9 @@ def save_image_to_wall(
     }
     response = requests.post(url, params)
     response.raise_for_status()
-    saved_image_data = response.json()
-    check_vk_response(saved_image_data)
-    return saved_image_data['response'][0]['owner_id'], saved_image_data['response'][0]['id']
+    saved_image_params = response.json()
+    check_vk_response(saved_image_params)
+    return saved_image_params['response'][0]['owner_id'], saved_image_params['response'][0]['id']
 
 
 def post_image(token, group_id, image_description, owner_id, media_id):
