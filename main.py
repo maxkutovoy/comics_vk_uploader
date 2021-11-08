@@ -39,7 +39,7 @@ def save_image(image_url, filename, image_dir):
         file.write(response.content)
 
 
-def get_boot_server_url(token, group_id):
+def get_wall_upload_server(token, group_id):
     url = 'https://api.vk.com/method/photos.getWallUploadServer'
     payload = {
         'access_token': token,
@@ -53,7 +53,7 @@ def get_boot_server_url(token, group_id):
     return boot_server_url['response']['upload_url']
 
 
-def get_uploaded_image_data(boot_server_url, image_dir):
+def save_image_to_server(boot_server_url, image_dir):
     with open(f'{image_dir}/{os.listdir(image_dir)[0]}', 'rb') as file:
         files = {
             'photo': file,
@@ -68,17 +68,17 @@ def get_uploaded_image_data(boot_server_url, image_dir):
 def save_image_to_wall(
         token,
         group_id,
-        uploaded_image_id,
-        uploaded_image_server,
-        uploaded_image_hash,
+        image_id,
+        image_server,
+        image_hash,
 ):
     url = 'https://api.vk.com/method/photos.saveWallPhoto'
     params = {
         'access_token': token,
         'group_id': group_id,
-        'photo': uploaded_image_id,
-        'server': uploaded_image_server,
-        'hash': uploaded_image_hash,
+        'photo': image_id,
+        'server': image_server,
+        'hash': image_hash,
         'v': '5.131',
     }
     response = requests.post(url, params)
@@ -120,15 +120,15 @@ def main():
     Path(image_dir).mkdir(parents=True, exist_ok=True)
     try:
         save_image(image_url, comic_title, image_dir)
-        boot_server_url = get_boot_server_url(vk_token, group_id)
-        uploaded_image_id, uploaded_image_server, uploaded_image_hash = get_uploaded_image_data(boot_server_url,
-                                                                                                image_dir)
+        boot_server_url = get_wall_upload_server(vk_token, group_id)
+        image_id, image_server, image_hash = save_image_to_server(boot_server_url,
+                                                                  image_dir)
         owner_id, media_id = save_image_to_wall(
             vk_token,
             group_id,
-            uploaded_image_id,
-            uploaded_image_server,
-            uploaded_image_hash,
+            image_id,
+            image_server,
+            image_hash,
         )
         post_image(vk_token, group_id, comic_description, owner_id, media_id)
     finally:
